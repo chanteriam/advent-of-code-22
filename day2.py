@@ -49,14 +49,6 @@
 # What would your total score be if everything goes exactly according to your
 # strategy guide?
 
-MOVES = ["rock", "paper", "scissor"]
-OPPONENT_MOVES = ["A", "B", "C"]
-YOUR_MOVES = ["X", "Y", "Z"]
-SHAPE_SCORES = [1, 2, 3]
-OUTCOMES = ["lost", "draw", "won"]
-OUTCOME_SCORES = [0, 3, 6]
-
-
 def get_strategy_guide(file_path):
     """
     Load strategy profile for each round of rock, paper, scissors
