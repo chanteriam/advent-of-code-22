@@ -78,7 +78,7 @@ def get_strategy_guide(file_path):
     return len(strategies), strategies
 
 
-def get_total_score(file_path):
+def get_total_score(file_path, part_one=True):
     """
     Using the strategy profile, calculates the total score one would get from
     following the profile.
@@ -95,7 +95,13 @@ def get_total_score(file_path):
 
     # find total score for the entire game
     for opponent, outcome in strategies:
-        player = determine_move(opponent, outcome)
+
+        # determine if using strategy from part 1 or part 2
+        if (part_one):
+            player = determine_move(opponent, outcome)
+        else:
+            player = outcome
+
         _, round_score = determine_outcome(opponent, player)
         total_score += round_score
 
@@ -242,3 +248,19 @@ def determine_move(opponent, outcome):
         # if opponent plays scissors - play rock
         if opponent == "C":
             return "X"
+
+
+# SOLVE ADVENT CHALLENGES
+def main():
+    """
+    Calls relevant functions for solving advent calendar problems
+
+    Return:
+        Outcomes for parts 1 and 2
+    """
+
+    file_path = "data/day2-input.txt"
+    partone_score = get_total_score(file_path)
+    parttwo_score = get_total_score(file_path, False)
+
+    return partone_score, parttwo_score

@@ -68,7 +68,8 @@ def find_max_calories(file_path):
     """
 
     elf_lst = create_elves(file_path)
-    return sort_elves(elf_lst)[0]
+    sort_elves(elf_lst)
+    return elf_lst[0].total_calories
 
 
 # --- PART TWO ---
@@ -123,3 +124,22 @@ def sum_elves(elf_lst):
 
     total = sum([elf.total_calories for elf in elf_lst])
     return total
+
+
+# SOLVE ADVENT CHALLENGES
+def main():
+    """
+    Calls relevant functions for solving advent calendar problems
+
+    Return:
+        Outcomes for parts 1 and 2
+    """
+
+    # Part 1 - get max calories
+    file_path = "data/day1-input.txt"
+    top_calories = find_max_calories(file_path)
+
+    # Part 2 - find sum of top 3 calories
+    top3 = sum_elves(find_top_elves(file_path))
+
+    return top_calories, top3
