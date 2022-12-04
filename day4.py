@@ -76,7 +76,7 @@ def load_section_assignments(file_path):
     return section_pairs
 
 
-def determine_section_overlap(file_path):
+def determine_paired_overlap(file_path):
     """
     Determines how many elf pairs have section overlaps.
 
@@ -89,23 +89,131 @@ def determine_section_overlap(file_path):
 
     overlap_count = 0
     section_pairs = load_section_assignments(file_path)
-    for p1, p2 in section_pairs:
+    for pair in section_pairs:
 
         # split pair sections into seperate lists
-        sec1_split = p1.split("-")
-        section1 = [i for i in range(
-            int(sec1_split[0]), int(sec1_split[1]) + 1)]
-
-        sec2_split = p2.split("-")
-        section2 = [i for i in range(
-            int(sec2_split[0]), int(sec2_split[1]) + 1)]
+        section1, section2 = pair_to_list(pair)
 
         # determine overlap
-        if len(section1) > len(section2):
-            if (set(section2).issubset(set(section1))):
-                overlap_count += 1
-        else:
-            if (set(section1).issubset(set(section2))):
-                overlap_count += 1
+        if determine_subset(section1, section2):
+            overlap_count += 1
 
     return overlap_count
+
+
+def pair_to_list(pair):
+    """
+    Converts tuple section pairs to lists containing range of values.
+
+    Inputs:
+        pair (tuple): a pair containing string ranges, such as ("18-21", "6-9")
+
+    Returns:
+        (tuple): tuple containing expanded list ranges for pair.
+    """
+
+    p1, p2 = pair
+    sec1_split = p1.split("-")
+    sec2_split = p2.split("-")
+
+    section1 = [i for i in range(
+        int(sec1_split[0]), int(sec1_split[1]) + 1)]
+    section2 = [i for i in range(
+        int(sec2_split[0]), int(sec2_split[1]) + 1)]
+
+    return section1, section2
+
+
+def determine_subset(lst1, lst2):
+    """
+    Determine if there is overlap between two lists.
+
+    Inputs:
+        lst1 (list), lst2 (list): lists to determine overlap between
+
+    Return:
+        (bool) if one of the lists is a subset of another
+    """
+
+    if len(lst1) > len(lst2):
+        if (set(lst2).issubset(set(lst1))):
+            return True
+    else:
+        if (set(lst1).issubset(set(lst2))):
+            return True
+
+    return False
+
+
+# --- Part Two ---
+# It seems like there is still quite a bit of duplicate work planned. Instead,
+# the Elves would like to know the number of pairs that overlap at all.
+
+# In the above example, the first two pairs (2-4,6-8 and 2-3,4-5) don't overlap,
+# while the remaining four pairs (5-7,7-9, 2-8,3-7, 6-6,4-6, and 2-6,4-8)
+# do overlap:
+
+# 5-7,7-9 overlaps in a single section, 7.
+# 2-8,3-7 overlaps all of the sections 3 through 7.
+# 6-6,4-6 overlaps in a single section, 6.
+# 2-6,4-8 overlaps in sections 4, 5, and 6.
+# So, in this example, the number of overlapping assignment pairs is 4.
+
+# In how many assignment pairs do the ranges overlap?
+
+def determine_overlap(lst1, lst2):
+    """
+    Determine if any shared elements between lst1 and lst2
+
+    Inputs:
+        lst1 (list), lst2 (list): lists to determine overlap between
+
+    Return:
+        (bool): if any overlap between two lists
+    """
+
+    for l in lst1:
+        if l in lst2:
+            return True
+
+    return False
+
+
+def determine_any_overlap(file_path):
+    """
+    Determines any overlap between section pairs for elves.
+    
+    Inputs:
+        file_path (str): file path for input data
+
+    Return:
+        (int): count of pairs that have any overlap
+    """
+
+    overlap_count = 0
+    section_pairs = load_section_assignments(file_path)
+
+    # get list of all sections
+    for pair in section_pairs:
+        section1, section2 = pair_to_list(pair)
+        if determine_overlap(section1, section2):
+            overlap_count += 1
+
+    return overlap_count
+
+
+# SOLVE ADVENT CHALLENGE
+def main():
+    """
+    Calls relevant functions for solving advent calendar problems
+
+    Return:
+        Outcomes for parts 1 and 2
+    """
+
+    # Part 1 - determine complete overlap
+    file_path = "data/day4-input.txt"
+    print(determine_paired_overlap(file_path))
+
+    # Part 2 - determine any overlap
+    print(determine_any_overlap(file_path))
