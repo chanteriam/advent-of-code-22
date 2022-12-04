@@ -64,6 +64,7 @@ class Rucksack:
         Inputs:
             contents (str): the contents of the Rucksack
         """
+        self.total_contents = contents.strip()
         self.first_compartment = contents[:len(contents)//2]
         self.second_compartment = contents[len(contents)//2:]
 
@@ -197,18 +198,40 @@ def define_groups(file_path, k=3):
     return groups
 
 
-def find_badge(rucksack_groups):
+def find_badges(rucksack_groups, group_size=3):  # FIXME
     """
     Finds common items across each group of rucksacks.
 
-    Inputs:
+    Inputs
         rucksack_groups (list): a list of tuple rucksack groups of equal size
+        group_size (int): the size of each rucksack groups
 
     Returns:
         (list): badges corresponding to each rucksack group, where a badge is
             determine by a shared valued across each rucksack in a given group
     """
-    pass
+
+    badges = []
+
+    for group in rucksack_groups:
+        total_contents = ""  # stores unique contents across each group member
+
+        for rucksack in group:
+
+            # get unique values for a single rucksack
+            unique = set()
+            for item in rucksack.total_contents:
+                unique.add(item)
+
+            # add contents to total contents for group
+            total_contents += "".join(unique)
+
+        # find duplicate value across group
+        for item in total_contents:
+            if total_contents.count(item) == group_size:
+                badges.append(item)
+                break
+    return badges
 
 
 # SOLVE ADVENT CHALLENGE
@@ -230,3 +253,10 @@ def main():
         duplicate_score += get_score(duplicates)
 
     print(duplicate_score)
+
+    # Part 2 - get badge scores
+    rucksack_groups = define_groups(file_path)
+    badges = find_badges(rucksack_groups)
+    badges_score = get_score("".join(badges))
+    
+    print(badges_score)
