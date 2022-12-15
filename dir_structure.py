@@ -83,23 +83,17 @@ class Directory:
         """
         return self.__to_string()
 
-    # def __to_string(self, tab_count=0):
-
-    #     s = "\t"*tab_count + "Directory Name: " + self.name + "\n"
-    #     s += "\t"*tab_count + "Directory Size: " + str(self.__size) + "\n\n"
-    #     s += "\t"*tab_count + "Directory Files: \n"
-
-    #     for file in self.files:
-    #         f = "\t"*(tab_count+1) + "File Name: " + str(file.name) + "\n"
-    #         f += "\t"*(tab_count+1) + "File Size: " + str(file.size) + "\n"
-    #         s += f
-
-    #     for directory in self.subdirectories:
-    #         s += directory.__to_string(tab_count+1)
-
-    #     return s
-
     def __to_string(self, tab_count=0):
+        """
+        Helper function to override default repr function. Provides string
+            representation of a directory structure.
+
+        Inputs:
+            tab_count (int): indentation level of the current directory
+
+        Returns:
+            (string): string representation of the directory structure
+        """
 
         s = "\t"*tab_count + \
             "- {} (dir, size = {}) \n".format(self.name, self.__size)
@@ -135,7 +129,7 @@ class Directory:
             path (str): path of subdirectory to find in directory structure
 
         Returns:
-            (bool, str): tuple, true if path exists, false otherwise and type
+            (bool, str): tuple, true if path exists, false otherwise and type of
                 object the path goes to (file or directory)
         """
 
@@ -174,19 +168,28 @@ class Directory:
                 file will be added to current directory
 
         Return:
-            (int): 1 if the file was successfully added, -1 otherwise
+            (str): message if file was successfully added
         """
 
         exists, obj_type = self.path_exists(path)
 
         if not exists:
-            return -1
+            return "ERROR: Path doesn't exist"
 
         elif obj_type == "file":  # can't add a file to another file
-            return -1
+            return "ERROR: cannot add a file to another file"
 
         else:
-            return self.__add_subfile(file, path)
+            message = ""
+            if path == "":
+                message = self.__add_subfile(file, path)
+
+            # remove main
+            else:
+                message = self.__add_subfile(file, path[path.index("/")+1:])
+
+            self.update_size()
+            return message
 
     def __add_subfile(self, file, path=""):
         """
@@ -202,9 +205,9 @@ class Directory:
             if file not in self.files:  # prevents duplicate files
                 self.files.append(file)
                 self.__size += file.size
-                return 1
+                return "SUCCESS: File successfully added"
             else:
-                return -1
+                return "ERROR: File already exists"
 
         # recursively traverse to correct directory
         else:
@@ -212,7 +215,7 @@ class Directory:
             new_path = path[path.index("/")+1:]
 
             new_dir_idx = self.subdirectories.index(Directory(new_dir))
-            self.subdirectories[new_dir_idx].__add_subfile(file, new_path)
+            return self.subdirectories[new_dir_idx].__add_subfile(file, new_path)
 
     def add_directory(self, directory, path=""):
         """
@@ -225,19 +228,29 @@ class Directory:
                 specified, directory will be added to current directory
 
         Return:
-            (int): 1 if the file was successfully added, -1 otherwise
+            (str): message if directory was successfully added
         """
 
         exists, obj_type = self.path_exists(path)
 
         if not exists:
-            return -1
+            return "ERROR: Path does not exist"
 
         elif obj_type == "file":  # can't add a directory to a file
-            return -1
+            return "ERROR: Cannot add a directory to a File"
 
         else:
-            return self.__add_subdir(directory, path)
+            message = ""
+            if path == "":
+                message = self.__add_subdir(directory, path)
+
+            # remove main
+            else:
+                message = self.__add_subdir(
+                    directory, path[path.index("/")+1:])
+
+            self.update_size()
+            return message
 
     def __add_subdir(self, directory, path=""):
         """
@@ -254,9 +267,9 @@ class Directory:
             if directory not in self.subdirectories:  # prevents duplicate files
                 self.subdirectories.append(directory)
                 self.__size += directory.__size
-                return 1
+                return "SUCCESS: Directory was successfully added"
             else:
-                return -1
+                return "ERROR: Directory already exists"
 
         # recursively traverse to the correct directory
         else:
@@ -264,7 +277,7 @@ class Directory:
             new_path = path[path.index("/")+1:]
 
             new_dir_idx = self.subdirectories.index(Directory(new_dir))
-            self.subdirectories[new_dir_idx].__add_subfile(directory, new_path)
+            self.subdirectories[new_dir_idx].__add_subdir(directory, new_path)
 
     def remove(self, path):
         """
@@ -275,12 +288,13 @@ class Directory:
                 unspecified, removes the file at the 0-index.
 
         Returns:
-            (int): the size of the removed file
+            (int): the size of the removed file, -1 if error
         """
 
         exists, _ = self.path_exists(path)
         if (not exists) or (path == ""):
             print("ERROR: File does not exist")
+            return -1
 
         else:
             # removing main dir
@@ -333,10 +347,13 @@ class Directory:
             (int) size of the directory
         """
 
-        if len(self.subdirectories) == 0:
-            return self.__size
+        size = 0
 
-        size = self.__size
+        # get a count of all of the files
+        for file in self.files:
+            size += file.size
+
+        # get a count of all the files in the subdirectories
         for subdir in self.subdirectories:
             size += subdir.update_size()
 

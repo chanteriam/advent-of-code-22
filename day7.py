@@ -243,14 +243,14 @@ def find_dir_to_delete(directory, needed, cur):
 
     Inputs:
         directory (Directory): the Directory object to traverse
-        cur_unused (int): the current amount of unused space the current directory uses
-        total_space (int): the total amount of space the drive can hold
-        space_needed (int): the amount of free space needed
+        needed (int): the amount of free space needed
+        cur (int): current minimum size to delete
 
     Returns:
         (int): size of the smallest directory able to delete to free up the 
             space needed
     """
+
     if (directory.num_subdirectories() > 0):
 
         for d in directory.subdirectories:
