@@ -100,6 +100,88 @@ def get_signal_strength(instructions, to_sum=[20, 60, 100, 140, 180, 220]):
 
     return sum_cycle_strength
 
+# --- Part Two ---
+# It seems like the X register controls the horizontal position of a sprite.
+# Specifically, the sprite is 3 pixels wide, and the X register sets the
+# horizontal position of the middle of that sprite. (In this system, there is
+# no such thing as "vertical position": if the sprite's horizontal position
+# puts its pixels where the CRT is currently drawing, then those pixels will
+# be drawn.)
+
+# You count the pixels on the CRT: 40 wide and 6 high. This CRT screen draws
+# the top row of pixels left-to-right, then the row below that, and so on.
+# The left-most pixel in each row is in position 0, and the right-most pixel
+# in each row is in position 39.
+
+# Like the CPU, the CRT is tied closely to the clock circuit: the CRT draws a
+# single pixel during each cycle. Representing each pixel of the screen as a #,
+# here are the cycles during which the first and last pixel in each row are
+# drawn:
+
+# Cycle   1 -> ######################################## <- Cycle  40
+# Cycle  41 -> ######################################## <- Cycle  80
+# Cycle  81 -> ######################################## <- Cycle 120
+# Cycle 121 -> ######################################## <- Cycle 160
+# Cycle 161 -> ######################################## <- Cycle 200
+# Cycle 201 -> ######################################## <- Cycle 240
+# So, by carefully timing the CPU instructions and the CRT drawing operations,
+# you should be able to determine whether the sprite is visible the instant each
+# pixel is drawn. If the sprite is positioned such that one of its three pixels
+# is the pixel currently being drawn, the screen produces a lit pixel (#);
+# otherwise, the screen leaves the pixel dark (.).
+# Render the image given by your program. What eight capital letters appear on
+# your CRT?
+
+
+def get_sprite_position(instructions):
+    """
+    Generate CRT image of sprite.
+
+    Inputs:
+        instructions (list): list of signal instructions, either "noop" or "addx"
+
+    Outputs:
+        (list of lists): CRT image of sprite; also outputs a .txt file with 
+            chars representing the sprite image
+    """
+
+    lit_pixels = []
+    crt = []
+    cur_row = []
+    x = 1
+    pos = 0
+
+    for instruction in instructions:
+        if instruction[0] == 'noop':
+            num_cycles = 1
+        else:
+            num_cycles = 2
+
+        for i in range(num_cycles):
+            if pos in [x-1, x, x+1]:
+                cur_row.append(pos)
+
+            if i == 1:
+                inc = int(instruction[1])
+                x += inc
+            pos += 1
+
+            if pos >= 40:
+                pos = 0
+                lit_pixels.append(cur_row)
+                cur_row = []
+
+    for line in lit_pixels:
+        crt.append(['#' if n in line else '.' for n in range(40)])
+
+    with open("data/day10-output.txt", "w") as f:
+        for line in crt:
+            for l in line:
+                f.write(l)
+            f.write("\n")
+
+    return crt
+
 
 # SOLVE ADVENT CHALLENG
 def main():
@@ -116,3 +198,6 @@ def main():
     # Part 1 - get sum of signal strength during 20th, 60th, 100th,
     # 140th, 180th cycles
     print(get_signal_strength(instructions))
+
+    # Part 2 - render CRT image
+    print(get_sprite_position(instructions))
