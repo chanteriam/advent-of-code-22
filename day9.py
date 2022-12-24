@@ -80,6 +80,15 @@
 # longer adjacent to the tail.
 
 def load_input(file_path):
+    """
+    Loads input movement instructions for rope knots.
+
+    Inputs:
+        file_path (string): file path of movement instructions
+
+    Returns:
+        (list): list of tuples of movement instructions
+    """
 
     movements = []
 
@@ -104,57 +113,58 @@ def move_knots(movements, knots=2):
     """
 
     knot_positions = [(0, 0)] * knots
-    prev_positions = [(0, 0)] * knots
     tail_positions = {(0, 0)}
 
     for direction, steps in movements:
-        for s in range(int(steps)):
-            for i, knot in enumerate(knot_positions):
+        for _ in range(int(steps)):
 
-                # advance head knot step up, down, left, or right
-                if (i == 0):
-                    if direction == "R":
-                        knot_positions[i] = prev_positions[i][0] + \
-                            1, prev_positions[i][1]
-                    elif direction == "L":
-                        knot_positions[i] = prev_positions[i][0] - \
-                            1, prev_positions[i][1]
-                    elif direction == "U":
-                        knot_positions[i] = prev_positions[i][0], prev_positions[i][1] + 1
-                    else:
-                        knot_positions[i] = prev_positions[i][0], prev_positions[i][1] - 1
+            # advance head knot step up, down, left, or right
+            if direction == "R":
+                knot_positions[0] = knot_positions[0][0] + \
+                    1, knot_positions[0][1]
+            elif direction == "L":
+                knot_positions[0] = knot_positions[0][0] - \
+                    1, knot_positions[0][1]
+            elif direction == "U":
+                knot_positions[0] = knot_positions[0][0], knot_positions[0][1] + 1
+            else:
+                knot_positions[0] = knot_positions[0][0], knot_positions[0][1] - 1
 
-                # advance current knot to position of prev
-                else:
-                    if not adjacent(knot_positions[i-1], knot):
-                        if (move_diagonal(knot_positions[i-1], knot)):
-                            knot_positions[i] = diagonal_move(
-                                knot_positions[i-1], knot)
-                        else:
-                            knot_positions[i] = prev_positions[i-1]
+            # advance position of remaining knots
+            for i in range(knots-1):
+                if not adjacent(knot_positions[i], knot_positions[i+1]):
+                    knot_positions[i+1] = \
+                        move_knot(knot_positions[i], knot_positions[i+1])
 
                 # is this the tail knot? - populate tail knot positions
-                if (i+1) == knots:
-                    tail_positions.add(knot_positions[i])
-
-            for i, pos in enumerate(knot_positions):
-                prev_positions[i] = pos
-
+                if (i+2) == knots:
+                    tail_positions.add(knot_positions[i+1])
     return len(tail_positions)
 
 
-def diagonal_move(knot_one, knot_two):
+def move_knot(knot_one, knot_two):
+    """
+    Advances the position of knot two in response to the position of knot one,
+        either horizontally, vertically, or diagonally
+
+    Inputs:
+        knot_one (tuple): position of knot one
+        knot_two (tuple): position of knot two
+
+    Returns:
+        (tuple): advanced position of knot two
+    """
     new_x = knot_two[0]
     new_y = knot_two[1]
 
     if knot_one[0] > knot_two[0]:
         new_x += 1
-    else:
+    elif knot_one[0] < knot_two[0]:
         new_x -= 1
 
     if knot_one[1] > knot_two[1]:
         new_y += 1
-    else:
+    elif knot_one[1] < knot_two[1]:
         new_y -= 1
 
     return (new_x, new_y)
@@ -173,22 +183,6 @@ def adjacent(head, tail):
     """
 
     return (abs(head[0] - tail[0]) <= 1) and (abs(head[1] - tail[1]) <= 1)
-
-
-def move_diagonal(head, tail):
-    """
-    Determines tail needs to move diagonally, defined as when tail and head
-        and in both a different row and a different column.
-
-    Inputs:
-        head (tuple): point 1
-        tail (tuple): point 2
-
-    Returns:
-        (bool): True if tail must move diagnoally 
-    """
-
-    return (abs(head[0] - tail[0]) > 0) and (abs(head[1] - tail[1]) > 0)
 
 
 # --- Part Two ---
